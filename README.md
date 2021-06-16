@@ -360,3 +360,306 @@ console.log(newArr);
 console.log(arr3.toString());
 console.log(arr3.join('|'));
 ```
+
+### 对象的拓展(demo10.js)
+
+```javascript
+// 属性更加简洁表示
+let max = '大';
+let min = '小';
+let obj = { max, min }; // 等同于 let obj = {max: max, min: min}
+console.log(obj);
+
+// key 值的构建
+let key = 'skill';
+var obj2 = {
+  [key]: 'web',
+};
+console.log(obj2);
+
+// 自定义对象的方法
+let obj3 = {
+  add: function (a, b) {
+    return a + b;
+  },
+};
+console.log(obj3.add(1, 2));
+
+/**
+ * === 同值相等
+ * is() 严格相等
+ */
+let a = { name: 'leslie' };
+let b = { name: 'leslie' };
+let c = Object.is(a, b); // 等价于 a.name === b.name
+console.log(c); // false
+
+console.log(+0 === -0); // true
+console.log(NaN === NaN); // false
+
+Object.is(+0, -0); // false
+Object.is(NaN, NaN); // true
+
+// 对象合并 Object.assign
+let d = { name: 'hi' };
+let e = { age: 18 };
+let f = { sex: '男' };
+let g = Object.assign(d, e, f);
+console.log(g);
+```
+
+### Symbol - 新的数据类型(demo11.js)
+
+```javascript
+/**
+ * 值类型(基本类型)：字符串（String）、数字(Number)、布尔(Boolean)、对空（Null）、未定义（Undefined）、Symbol。
+ * 引用数据类型：对象(Object)、数组(Array)、函数(Function)。
+ */
+
+// 新增数据类型
+let f = Symbol();
+console.log(typeof f);
+
+let my = Symbol('my');
+console.log(my);
+console.log(my.toString());
+
+// 在对象中的应用
+let b = Symbol();
+let c = {
+  [b]: 'leslie',
+};
+console.log(c[b]);
+c[b] = 'hi';
+console.log(c[b]);
+
+// 受保护;在node 应用更多
+let obj = { name: 'leslie', age: 18 };
+let sex = Symbol();
+obj[sex] = '男';
+console.log('---------');
+for (const key in obj) {
+  console.log(obj[key]); // 没有输出 sex
+}
+```
+
+### Set 和 WeakSet 数据结构(demo12.js)
+
+```javascript
+/**
+ * Set
+ */
+// 声明
+let a = new Set(['张三', '李四']);
+a.add('小明');
+console.log(a); // Set { '张三', '李四', '小明' }
+
+// 去重
+let b = new Set(['a', 'b', 'c', 'a']);
+console.log(b);
+
+// 查找has
+b.has('a'); // true
+b.has('d'); // false
+
+// delete - 删除指定值； clear- 删除全部
+b.delete('c');
+console.log('delete:', b);
+
+// for of
+for (const item of b) {
+  console.log(item);
+}
+
+// forEach
+b.forEach((val) => console.log(val));
+
+// size 属性
+console.log(b.size);
+
+/**
+ * WeakSet
+ */
+let weakObj = new WeakSet();
+let obj = { a: 'a', b: 'b' };
+let obj2 = { a: 'a', b: 'b' };
+weakObj.add(obj);
+weakObj.add(obj2);
+console.log('weakObj', weakObj);
+```
+
+### Map 数据结构(demo13.js)
+
+> 高效、灵活
+
+```javascript
+// json
+let json = {
+  name: 'leslie',
+  age: 18,
+};
+console.log(json.name); // 需要遍历对象查找的
+
+// map =>
+let map = new Map();
+map.set(json, 'ima');
+map.set('ima2', json);
+map.set('ima3', json);
+console.log(map);
+
+// map增、删、查
+// get
+console.log(map.get(json)); // ima
+// delete - 删除指定值； clear- 删除全部
+map.delete('ima2');
+console.log('delete后:', map);
+// size 属性
+console.log(map.size);
+// 查找
+map.has('ima3'); // true
+```
+
+### Proxy 代理(demo14.js)
+
+> Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写
+
+```javascript
+// Proxy 代理 ES6 增强对象和函数 生命周期 钩子函数（预处理）
+let pro = new Proxy(
+  {
+    add: function (val) {
+      return val + 100;
+    },
+    name: 'I am Leslie',
+  },
+  {
+    // 前两个参数必选，第三个参数 可选
+    get: function (target, key, property) {
+      console.log('come in get');
+      return target[key];
+    },
+    // 4 个参数 value: 改变后的值 receiver：原始值
+    set: function (target, key, value, receiver) {
+      console.log(`setting ${key} = ${value}`);
+      return (target[key] = value);
+    },
+  },
+);
+console.log(pro.name);
+pro.name = 'hello';
+console.log(pro.name);
+
+// apply
+let target = function () {
+  return 'I am Leslie';
+};
+let handler = {
+  apply(target, ctx, args) {
+    console.log('do apply');
+    return Reflect.apply(...arguments);
+  },
+};
+let pro2 = new Proxy(target, handler);
+console.log(pro2());
+```
+
+### Promise 对象(demo15.js)
+
+> Promise 是异步编程的一种解决方案，比传统的解决方案——回调函数和事件——更合理和更强大。解决 es5 回调地狱问题。
+
+```javascript
+/**
+ * promise 解决 es5 回调地狱问题
+ * 1.洗菜做饭
+ * 2.坐下吃饭
+ * 3.洗碗
+ */
+
+let state = 1;
+function step1(resolve, reject) {
+  console.log('1.开始洗菜做饭');
+  if (state === 1) {
+    resolve('洗菜做饭-完成');
+  } else {
+    reject('洗菜做饭-出错');
+  }
+}
+function step2(resolve, reject) {
+  console.log('2.坐下吃饭');
+  if (state === 1) {
+    resolve('坐下吃饭-完成');
+  } else {
+    reject('坐下吃饭-出错');
+  }
+}
+function step3(resolve, reject) {
+  console.log('3.洗碗');
+  if (state === 1) {
+    resolve('洗碗-完成');
+  } else {
+    reject('洗碗-出错');
+  }
+}
+new Promise(step1)
+  .then(function (val) {
+    console.log('val:', val);
+    return new Promise(step2);
+  })
+  .then(function (val) {
+    console.log('val:', val);
+    return new Promise(step3);
+  })
+  .then(function (val) {
+    console.log('val:', val);
+    console.log('结束');
+  });
+```
+
+### Class 类(demo16.js)
+
+```javascript
+// class 声明
+class Coder {
+  // 类的参数
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+  name(val) {
+    console.log(val);
+    return val;
+  }
+  skill(val) {
+    console.log(`${this.name('李四')}的skill是${val}`);
+  }
+  add() {
+    return this.a + this.b;
+  }
+}
+
+// 使用
+let a = new Coder();
+a.name('张三');
+a.skill('打游戏');
+
+let b = new Coder(1, 2);
+console.log(b.add());
+
+// 类的继承 extends
+class Htmler extends Coder {}
+
+let c = new Htmler(2, 3);
+console.log(c.add());
+```
+
+### module 模块化(demo17.js module/)
+
+```javascript
+// export 导出
+// import 导入
+import { name, add } from './module/a';
+console.log(name);
+console.log(add(1, 2));
+```
+
+### [Github](https://github.com/luozyiii/es6-best)
