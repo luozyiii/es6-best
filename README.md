@@ -1,6 +1,6 @@
 # es6-best
 
-ES6 必会核心知识学习
+ES6 核心知识学习
 
 ### Babel (demo1.js)
 
